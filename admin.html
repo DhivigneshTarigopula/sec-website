@@ -109,10 +109,7 @@
   </div>
 
   <script>
-    function adminLogout() {
-      sessionStorage.removeItem("adminLoggedIn");
-      window.location.href = "welcome.html";
-    }
+    
 
     function renderStudents(){
       const students = JSON.parse(localStorage.getItem("students")) || [];
