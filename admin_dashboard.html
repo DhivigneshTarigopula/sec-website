@@ -73,7 +73,6 @@
   <div class="summary">
     <h2>Total Registered Students: <span id="studentCount" style="color:#0d6efd;">0</span></h2>
     <div>
-      <button onclick="adminLogout()" style="padding:8px 14px; background:#dc3545; color:#fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin-right:10px;">Admin Logout</button>
       <a href="index.html" style="text-decoration:none; color:#0d6efd; font-weight:bold;">← Back to Welcome Page</a>
     </div>
   </div>
@@ -110,10 +109,6 @@
   </div>
 
   <script>
-    function adminLogout() {
-      sessionStorage.removeItem("adminLoggedIn");
-      window.location.href = "welcome.html";
-    }
 
     function renderStudents(){
       const students = JSON.parse(localStorage.getItem("students")) || [];
