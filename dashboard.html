@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPlanner - Study Management Platform</title>
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-dark: #0b5ed7;
+      --secondary: #eea411;
+      --accent: #47d3c5;
+      --dark-bg: #120d1c;
+      --card-bg: #ffffff;
+      --text-dark: #212529;
+      --text-muted: #6c757d;
+      --danger: #dc3545;
+      --success: #198754;
+      --warning: #ffc107;
+      --info: #0dcaf0;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f6f9;
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP HEADER */
+    header.platform-header {
+      background: linear-gradient(135deg, #120d1c, #2a1b4e);
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .user-profile-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-profile-header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      background: #fff;
+    }
+
+    .user-profile-header .greeting {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .user-profile-header .greeting span {
+      color: var(--accent);
+    }
+
+    .nav-toggle-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 24px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-toggle-btn:hover {
+      background: var(--accent);
+      color: #120d1c;
+    }
+
+    /* SIDE NAVIGATION MENU (HAMBURGER DRAWER) */
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background: #120d1c;
+      color: #fff;
+      box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+      z-index: 1000;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .nav-drawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .drawer-header h3 { margin: 0; color: var(--accent); }
+    .close-drawer-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .drawer-menu {
+      list-style: none;
+      padding: 20px 0;
+      margin: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .drawer-menu li {
+      padding: 0;
+    }
+    .drawer-menu a {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 25px;
+      color: #e0e0e0;
+      text-decoration: none;
+      font-size: 1.05rem;
+      transition: all 0.2s ease;
+      border-left: 4px solid transparent;
+    }
+    .drawer-menu a:hover, .drawer-menu a.active {
+      background: rgba(71, 211, 197, 0.15);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .overlay {
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+    }
+    .overlay.active { display: block; }
+
+    /* MAIN CONTENT AREA */
+    main.content-area {
+      flex: 1;
+      max-width: 1250px;
+      width: 100%;
+      margin: 25px auto;
+      padding: 0 20px;
+      padding-bottom: 80px;
+    }
+
+    .page-section {
+      display: none;
+    }
+    .page-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARDS & CONTAINERS */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e9ecef;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: #120d1c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* PROFILE OVERVIEW CARD */
+    .profile-card-header {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .profile-card-header img {
+      width: 90px;
+      height: 90px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+    .profile-info h2 { margin: 0 0 6px 0; color: #120d1c; }
+    .profile-info p { margin: 3px 0; color: var(--text-muted); font-size: 0.95rem; }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    .badge-primary { background: #e7f1ff; color: var(--primary); }
+    .badge-accent { background: #e0fbf7; color: #0f8b7d; }
+    .badge-secondary { background: #fff4e0; color: #d98200; }
+    .badge-danger { background: #ffe6e8; color: var(--danger); }
+
+    .edit-details-btn {
+      color: var(--primary);
+      background: rgba(13, 110, 253, 0.1);
+      border: 1px solid var(--primary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .edit-details-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* COUNTDOWN WIDGET */
+    .countdown-box {
+      background: linear-gradient(135deg, #120d1c, #321c59);
+      color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    .countdown-box h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+    .timer-units {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .unit-box {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      border-radius: 8px;
+      min-width: 65px;
+    }
+    .unit-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #fff;
+    }
+    .unit-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    /* BUTTONS & FORMS */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: #fff; }
+    .btn-secondary:hover { background: #d99109; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #bb2d3b; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #146c43; }
+    .btn-sm { padding: 5px 10px; font-size: 0.85rem; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    /* SUBJECT TAG CHIPS */
+    .subject-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .chip {
+      background: #e9ecef;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip .remove-chip {
+      cursor: pointer;
+      color: var(--danger);
+      font-weight: bold;
+    }
+
+    /* TABLES & LISTS */
+    .item-card {
+      background: #fff;
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .item-card.exam-type {
+      border-left-color: var(--danger);
+      background: #fff9f9;
+    }
+    .item-details h4 { margin: 0 0 4px 0; color: #120d1c; }
+    .item-details p { margin: 2px 0; color: var(--text-muted); font-size: 0.9rem; }
+
+    /* MODAL WINDOWS */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 650px;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .modal-header h3 { margin: 0; color: #120d1c; }
+    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+
+    /* CALENDAR SPECIFIC */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+    .cal-day-name { font-weight: bold; padding: 8px; background: #e9ecef; border-radius: 4px; }
+    .cal-cell {
+      min-height: 80px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px;
+      text-align: left;
+      font-size: 0.85rem;
+      cursor: pointer;
+      position: relative;
+    }
+    .cal-cell:hover { border-color: var(--primary); background: #f8fafc; }
+    .cal-cell.today { border: 2px solid var(--primary); background: #f0f7ff; }
+    .cal-number { font-weight: bold; margin-bottom: 4px; }
+    .cal-event-dot {
+      background: var(--primary);
+      color: #fff;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cal-event-dot.exam { background: var(--danger); }
+
+    /* TIMER & STOPWATCH STYLING */
+    .timer-display {
+      font-size: 3.5rem;
+      font-weight: 800;
+      font-family: monospace;
+      color: #120d1c;
+      text-align: center;
+      margin: 20px 0;
+      letter-spacing: 2px;
+    }
+    .preset-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    /* FLOATING AI ASSISTANT BOT */
+    .ai-bot-widget {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 1500;
+    }
+    .ai-bot-trigger {
+      background: linear-gradient(135deg, #120d1c, #47d3c5);
+      color: #fff;
+      border: none;
+      padding: 14px 22px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+    .ai-bot-trigger:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+    .ai-chat-window {
+      position: fixed;
+      bottom: 90px;
+      right: 25px;
+      width: 420px;
+      max-width: calc(100vw - 40px);
+      height: 580px;
+      max-height: calc(100vh - 120px);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      display: none;
+      flex-direction: column;
+      z-index: 1500;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+    }
+    .ai-chat-window.active {
+      display: flex;
+      animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popUp {
+      from { opacity: 0; transform: scale(0.8) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .ai-header {
+      background: linear-gradient(135deg, #120d1c, #2a1b4e);
+      color: #fff;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ai-header h3 { margin: 0; font-size: 1.1rem; color: var(--accent); }
+    .ai-tabs {
+      display: flex;
+      background: #f1f3f5;
+      border-bottom: 1px solid #ddd;
+    }
+    .ai-tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+      border-bottom: 3px solid transparent;
+    }
+    .ai-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: #fff;
+    }
+    .ai-content-area {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    .chat-msg {
+      margin-bottom: 12px;
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    .chat-msg.user {
+      background: var(--primary);
+      color: #fff;
+      margin-left: auto;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-msg.bot {
+      background: #fff;
+      color: #120d1c;
+      border: 1px solid #e5e5e5;
+      margin-right: auto;
+      border-bottom-left-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .ai-footer {
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="platform-header">
+    <div class="user-profile-header">
+      <img id="navPhoto" src="https://via.placeholder.com/150" alt="Student Profile">
+      <div class="greeting">Hi <span id="navName">Student</span>! 👋</div>
+    </div>
+    <button class="nav-toggle-btn" id="openDrawerBtn" title="Menu">☰</button>
+  </header>
+
+  <!-- NAVIGATION DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <div class="nav-drawer" id="navDrawer">
+    <div class="drawer-header">
+      <h3>EduPlanner Navigation</h3>
+      <button class="close-drawer-btn" id="closeDrawerBtn">&times;</button>
+    </div>
+    <ul class="drawer-menu">
+      <li><a href="#" class="nav-link active" data-target="sec-dashboard">📊 Dashboard</a></li>
+      <li><a href="#" class="nav-link" data-target="sec-timetable">📅 Timetable & Calendar</a></li>
+      <li><a href="#" class="nav-link" data-target="sec-assignments">📁 Assignment Storage</a></li>
+      <li><a href="#" class="nav-link" data-target="sec-notes">📝 Notes Storage</a></li>
+      <li><a href="#" class="nav-link" data-target="sec-exams">⏰ Exams Reminder</a></li>
+      <li><a href="#" class="nav-link" data-target="sec-timer">⏱️ Timer & Stopwatch</a></li>
+      <li><a href="#" id="logoutBtn" style="color:#ff6b6b;">🚪 Log Out</a></li>
+    </ul>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="content-area">
+
+    <!-- 1. DASHBOARD SECTION -->
+    <section id="sec-dashboard" class="page-section active">
+      <!-- Profile Overview Card -->
+      <div class="card">
+        <div class="profile-card-header">
+          <img id="dashPhoto" src="https://via.placeholder.com/150" alt="Student Photo">
+          <div class="profile-info" style="flex:1;">
+            <h2 id="dashName">Student Name</h2>
+            <p><strong>School:</strong> <span id="dashSchool">-</span> | <strong>Class:</strong> <span id="dashClass">-</span> | <strong>Batch:</strong> <span id="dashBatch">-</span></p>
+            <p><strong>Board:</strong> <span id="dashBoard" class="badge badge-primary">Not set</span> | <strong>Location:</strong> <span id="dashLocation">-</span></p>
+            <div style="margin-top: 8px;">
+              <strong>Focus Subjects:</strong> <span id="dashSubjects">None selected</span>
+            </div>
+          </div>
+          <div>
+            <button class="edit-details-btn" id="triggerEditBtn">✏️ Edit Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 2: Countdown + Overview Stats -->
+      <div class="grid-2">
+        <!-- Live Countdown Widget -->
+        <div class="countdown-box">
+          <h3 id="countdownTitle">NEXT UPCOMING EXAM / EVENT</h3>
+          <div class="timer-units">
+            <div class="unit-box"><div class="unit-number" id="cdDays">00</div><div class="unit-label">Days</div></div>
+            <div class="unit-box"><div class="unit-number" id="cdHours">00</div><div class="unit-label">Hours</div></div>
+            <div class="unit-box"><div class="unit-number" id="cdMins">00</div><div class="unit-label">Mins</div></div>
+            <div class="unit-box"><div class="unit-number" id="cdSecs">00</div><div class="unit-label">Secs</div></div>
+          </div>
+          <p id="countdownSubtext" style="margin: 0; font-size: 0.9rem; color: #ddd;">No countdown set</p>
+        </div>
+
+        <!-- Quick Summary Stats -->
+        <div class="card" style="margin: 0;">
+          <h3 class="card-title">Academic Snapshot</h3>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+            <div style="background:#e7f1ff; padding:15px; border-radius:8px;">
+              <div style="font-size:1.8rem; font-weight:bold; color:var(--primary);" id="statAssignments">0</div>
+              <div style="font-size:0.85rem; color:var(--text-muted);">Assignments</div>
+            </div>
+            <div style="background:#e0fbf7; padding:15px; border-radius:8px;">
+              <div style="font-size:1.8rem; font-weight:bold; color:#0f8b7d;" id="statNotes">0</div>
+              <div style="font-size:0.85rem; color:var(--text-muted);">Notes</div>
+            </div>
+            <div style="background:#ffe6e8; padding:15px; border-radius:8px;">
+              <div style="font-size:1.8rem; font-weight:bold; color:var(--danger);" id="statExams">0</div>
+              <div style="font-size:0.85rem; color:var(--text-muted);">Upcoming Exams</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Schedule & Exams List -->
+      <div class="grid-2" style="margin-top: 24px;">
+        <div class="card">
+          <h3 class="card-title">Today's Timetable</h3>
+          <div id="dashTodayList">
+            <p style="color:var(--text-muted);">No tasks scheduled for today.</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Scheduled Exams Preview</h3>
+          <div id="dashExamsList">
+            <p style="color:var(--text-muted);">No upcoming exams scheduled.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. TIMETABLE SECTION -->
+    <section id="sec-timetable" class="page-section">
+      <div class="card">
+        <div class="card-title">
+          <span>📅 Timetable & Schedule Calendar</span>
+          <button class="btn btn-primary" id="addTimetableBtn">+ Add Task to Timetable</button>
+        </div>
+
+        <div class="calendar-header">
+          <button class="btn btn-sm btn-secondary" id="prevMonthBtn">&lt; Prev</button>
+          <h3 id="calendarMonthYear" style="margin:0;">Month Year</h3>
+          <button class="btn btn-sm btn-secondary" id="nextMonthBtn">Next &gt;</button>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">All Timetable Schedule Items</h3>
+        <div id="timetableListContainer"></div>
+      </div>
+    </section>
+
+    <!-- 3. ASSIGNMENT STORAGE SECTION -->
+    <section id="sec-assignments" class="page-section">
+      <div class="card">
+        <div class="card-title">
+          <span>📁 Assignment Storage</span>
+          <button class="btn btn-primary" id="addAssignmentBtn">+ Add New Assignment</button>
+        </div>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center;">
+          <label><strong>Filter by Subject:</strong></label>
+          <select id="assignmentFilterSubject" class="form-control" style="width: auto;">
+            <option value="ALL">All Focus Subjects</option>
+          </select>
+        </div>
+
+        <div id="assignmentsContainer" class="grid-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. NOTES STORAGE SECTION -->
+    <section id="sec-notes" class="page-section">
+      <div class="card">
+        <div class="card-title">
+          <span>📝 Subject Notes Storage</span>
+          <button class="btn btn-primary" id="addNoteBtn">+ Add New Note</button>
+        </div>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center;">
+          <label><strong>Filter by Subject:</strong></label>
+          <select id="notesFilterSubject" class="form-control" style="width: auto;">
+            <option value="ALL">All Focus Subjects</option>
+          </select>
+        </div>
+
+        <div id="notesContainer" class="grid-3">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. EXAMS REMINDER SECTION -->
+    <section id="sec-exams" class="page-section">
+      <div class="card">
+        <div class="card-title">
+          <span>⏰ Exams Reminder & Portion Manager</span>
+          <button class="btn btn-danger" id="addExamBtn">+ Add Exam Reminder</button>
+        </div>
+
+        <p style="color:var(--text-muted); margin-top:-10px; margin-bottom: 20px;">
+          Exams added here automatically synchronize with your Timetable calendar and generate live countdowns on your Dashboard!
+        </p>
+
+        <div id="examsContainer" class="grid-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. TIMER & STOPWATCH SECTION -->
+    <section id="sec-timer" class="page-section">
+      <div class="grid-2">
+        <!-- STOPWATCH CARD -->
+        <div class="card">
+          <h3 class="card-title">⏱️ Precision Stopwatch</h3>
+          <div class="timer-display" id="swDisplay">00:00:00.00</div>
+          <div style="display:flex; justify-content:center; gap:10px;">
+            <button class="btn btn-primary" id="swStartBtn">Start</button>
+            <button class="btn btn-secondary" id="swLapBtn" disabled>Lap</button>
+            <button class="btn btn-danger" id="swResetBtn">Reset</button>
+          </div>
+          <h4 style="margin-top:20px; margin-bottom:10px;">Lap History:</h4>
+          <div style="max-height:150px; overflow-y:auto; background:#f8f9fa; padding:10px; border-radius:6px; font-family:monospace;" id="swLapList">
+            <p style="color:#888; margin:0;">No laps recorded.</p>
+          </div>
+        </div>
+
+        <!-- POMODORO & COUNTDOWN TIMER CARD -->
+        <div class="card">
+          <h3 class="card-title">⏳ Study Focus & Pomodoro Timer</h3>
+          <div class="preset-btns">
+            <button class="btn btn-sm btn-secondary" onclick="setTimerPreset(25)">25m Focus</button>
+            <button class="btn btn-sm btn-secondary" onclick="setTimerPreset(50)">50m Deep Work</button>
+            <button class="btn btn-sm btn-secondary" onclick="setTimerPreset(5)">5m Short Break</button>
+            <button class="btn btn-sm btn-secondary" onclick="setTimerPreset(15)">15m Long Break</button>
+          </div>
+
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
+            <input type="number" id="timerHrs" class="form-control" style="width:70px; text-align:center;" placeholder="HH" min="0" value="0"> :
+            <input type="number" id="timerMins" class="form-control" style="width:70px; text-align:center;" placeholder="MM" min="0" max="59" value="25"> :
+            <input type="number" id="timerSecs" class="form-control" style="width:70px; text-align:center;" placeholder="SS" min="0" max="59" value="0">
+          </div>
+
+          <div class="timer-display" id="cdTimerDisplay" style="color:var(--primary);">25:00</div>
+
+          <div style="display:flex; justify-content:center; gap:10px;">
+            <button class="btn btn-success" id="cdTimerStartBtn">Start Timer</button>
+            <button class="btn btn-danger" id="cdTimerResetBtn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FLOATING AI ASSISTANT BOT WIDGET -->
+  <div class="ai-bot-widget">
+    <button class="ai-bot-trigger" id="aiBotTrigger">
+      🤖 EduAI Assistant
+    </button>
+
+    <div class="ai-chat-window" id="aiChatWindow">
+      <div class="ai-header">
+        <h3>🤖 EduAI Smart Academic Assistant</h3>
+        <button class="close-modal" id="closeAiChat" style="color:#fff;">&times;</button>
+      </div>
+
+      <div class="ai-tabs">
+        <button class="ai-tab-btn active" data-tab="tab-doubt">💬 Doubts & Q&A</button>
+        <button class="ai-tab-btn" data-tab="tab-plan">📅 Study Plan</button>
+        <button class="ai-tab-btn" data-tab="tab-test">📝 Take Test</button>
+      </div>
+
+      <!-- TAB 1: DOUBTS & QA -->
+      <div class="ai-content-area" id="tab-doubt">
+        <div class="chat-msg bot">
+          👋 Hi! I'm your AI Academic Assistant. Ask me any doubt in Physics, Chemistry, Math, Biology, CS, or general exam strategies!
+        </div>
+        <div id="chatMessages"></div>
+      </div>
+
+      <!-- TAB 2: STUDY PLAN GENERATOR -->
+      <div class="ai-content-area" id="tab-plan" style="display:none;">
+        <h4 style="margin-top:0; color:#120d1c;">📅 Exam Study Schedule Generator</h4>
+        <div class="form-group">
+          <label>Exam / Subject Title:</label>
+          <input type="text" id="aiPlanExamTitle" class="form-control" placeholder="e.g. Mathematics Midterm">
+        </div>
+        <div class="form-group">
+          <label>Days Remaining:</label>
+          <input type="number" id="aiPlanDays" class="form-control" value="3" min="1" max="14">
+        </div>
+        <div class="form-group">
+          <label>Topics to cover:</label>
+          <textarea id="aiPlanTopics" class="form-control" rows="2" placeholder="e.g. Trigonometry, Calculus, Probability"></textarea>
+        </div>
+        <button class="btn btn-primary" id="generatePlanBtn" style="width:100%;">⚡ Generate AI Study Plan</button>
+
+        <div id="aiPlanOutput" style="margin-top:15px;"></div>
+      </div>
+
+      <!-- TAB 3: TAKE A TEST -->
+      <div class="ai-content-area" id="tab-test" style="display:none;">
+        <div id="testSetupArea">
+          <h4 style="margin-top:0; color:#120d1c;">📝 Generate Custom Practice Test</h4>
+          <div class="form-group">
+            <label>Test Format:</label>
+            <select id="testFormat" class="form-control">
+              <option value="OBJECTIVE">Objective (Multiple Choice Questions - MCQ)</option>
+              <option value="SUBJECTIVE">Subjective (Short Answer / Theory Questions)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Time Duration (Minutes):</label>
+            <select id="testDuration" class="form-control">
+              <option value="5">5 Minutes</option>
+              <option value="10">10 Minutes</option>
+              <option value="15">15 Minutes</option>
+              <option value="30">30 Minutes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Subject & Specific Topics:</label>
+            <input type="text" id="testTopicInput" class="form-control" placeholder="e.g. Physics - Laws of Motion">
+          </div>
+          <button class="btn btn-danger" id="startTestBtn" style="width:100%;">🚀 Generate & Start Test</button>
+        </div>
+
+        <div id="testActiveArea" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#ffe6e8; padding:8px 12px; border-radius:6px; margin-bottom:12px;">
+            <strong id="testLiveTitle" style="color:var(--danger);">Exam in Progress</strong>
+            <span style="font-weight:bold; color:var(--danger);" id="testTimerClock">05:00</span>
+          </div>
+          <div id="testQuestionsContainer"></div>
+          <button class="btn btn-success" id="submitTestBtn" style="width:100%; margin-top:15px;">Submit Test</button>
+        </div>
+
+        <div id="testResultArea" style="display:none;"></div>
+      </div>
+
+      <div class="ai-footer" id="aiDoubtFooter">
+        <input type="text" id="chatInput" class="form-control" placeholder="Ask your doubt...">
+        <button class="btn btn-primary" id="sendChatBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. EDIT BOARD & FOCUS SUBJECTS MODAL -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Board & Focus Subjects</h3>
+        <button class="close-modal" id="closeEditModal">&times;</button>
+      </div>
+      <form id="editDetailsForm">
+        <div class="form-group">
+          <label for="boardSelect">Select Education Board:</label>
+          <select id="boardSelect" class="form-control" required>
+            <option value="">-- Choose Board --</option>
+            <option value="CBSE">CBSE (Central Board of Secondary Education)</option>
+            <option value="ICSE / ISC">ICSE / ISC</option>
+            <option value="State Board">State Board</option>
+            <option value="IB (International Baccalaureate)">IB (International Baccalaureate)</option>
+            <option value="Cambridge / IGCSE">Cambridge / IGCSE</option>
+            <option value="University / College Curriculum">University / College Curriculum</option>
+            <option value="Other / Custom">Other Board</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Select Subjects You Want to Focus On:</label>
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; background:#f8f9fa; padding:12px; border-radius:6px; border:1px solid #ddd;" id="defaultSubjectsList">
+            <label><input type="checkbox" value="Mathematics"> Mathematics</label>
+            <label><input type="checkbox" value="Physics"> Physics</label>
+            <label><input type="checkbox" value="Chemistry"> Chemistry</label>
+            <label><input type="checkbox" value="Biology"> Biology</label>
+            <label><input type="checkbox" value="English"> English</label>
+            <label><input type="checkbox" value="Computer Science"> Computer Science</label>
+            <label><input type="checkbox" value="Social Science / History"> Social Science</label>
+            <label><input type="checkbox" value="Economics / Accounts"> Economics / Accounts</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="customSubjectInput">Add Custom Subject (Optional):</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="customSubjectInput" class="form-control" placeholder="e.g. Artificial Intelligence, Sanskrit">
+            <button type="button" class="btn btn-secondary" id="addCustomSubBtn">Add</button>
+          </div>
+          <div class="subject-chips" id="selectedSubjectsChips"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;">Save Details & Continue</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. ADD TIMETABLE TASK MODAL -->
+  <div class="modal" id="timetableModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Timetable Task</h3>
+        <button class="close-modal" id="closeTimetableModal">&times;</button>
+      </div>
+      <form id="timetableForm">
+        <div class="form-group">
+          <label for="ttTitle">Task Title:</label>
+          <input type="text" id="ttTitle" class="form-control" placeholder="e.g. Solve Math Chapter 4" required>
+        </div>
+        <div class="form-group">
+          <label for="ttSubject">Subject:</label>
+          <select id="ttSubject" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="ttDate">Date:</label>
+          <input type="date" id="ttDate" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="ttTime">Time:</label>
+          <input type="time" id="ttTime" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="ttNotes">Notes / Description:</label>
+          <textarea id="ttNotes" class="form-control" rows="3" placeholder="Task details..."></textarea>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" id="ttFeatured"> Set as Featured Dashboard Countdown Target</label>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Add Task</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. ADD ASSIGNMENT MODAL -->
+  <div class="modal" id="assignmentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Assignment</h3>
+        <button class="close-modal" id="closeAssignmentModal">&times;</button>
+      </div>
+      <form id="assignmentForm">
+        <div class="form-group">
+          <label for="asTitle">Assignment Title:</label>
+          <input type="text" id="asTitle" class="form-control" placeholder="e.g. Physics Lab Report" required>
+        </div>
+        <div class="form-group">
+          <label for="asSubject">Subject:</label>
+          <select id="asSubject" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="asDueDate">Due Date:</label>
+          <input type="date" id="asDueDate" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="asDetails">Details / Instructions:</label>
+          <textarea id="asDetails" class="form-control" rows="3" placeholder="Write assignment requirements or reference notes..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Save Assignment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. ADD NOTE MODAL -->
+  <div class="modal" id="noteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Subject Note</h3>
+        <button class="close-modal" id="closeNoteModal">&times;</button>
+      </div>
+      <form id="noteForm">
+        <div class="form-group">
+          <label for="ntTitle">Note Title:</label>
+          <input type="text" id="ntTitle" class="form-control" placeholder="e.g. Thermodynamics Formulas" required>
+        </div>
+        <div class="form-group">
+          <label for="ntSubject">Subject:</label>
+          <select id="ntSubject" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="ntContent">Note Content:</label>
+          <textarea id="ntContent" class="form-control" rows="6" placeholder="Write or paste your study notes here..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Save Note</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. ADD EXAM REMINDER MODAL -->
+  <div class="modal" id="examModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Exam Reminder</h3>
+        <button class="close-modal" id="closeExamModal">&times;</button>
+      </div>
+      <form id="examForm">
+        <div class="form-group">
+          <label for="exTitle">Exam Name / Title:</label>
+          <input type="text" id="exTitle" class="form-control" placeholder="e.g. Midterm Physics Examination" required>
+        </div>
+        <div class="form-group">
+          <label for="exSubject">Subject:</label>
+          <select id="exSubject" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="exDate">Exam Date:</label>
+          <input type="date" id="exDate" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="exTime">Exam Time:</label>
+          <input type="time" id="exTime" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="exPortion">Portions / Syllabus Covered:</label>
+          <textarea id="exPortion" class="form-control" rows="3" placeholder="e.g. Chapters 1 to 5, Optics, Waves" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger" style="width:100%;">Schedule Exam & Sync Timetable</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- VIEW NOTE DETAIL MODAL -->
+  <div class="modal" id="viewNoteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="viewNoteTitle">Note Detail</h3>
+        <button class="close-modal" id="closeViewNoteModal">&times;</button>
+      </div>
+      <p><strong>Subject:</strong> <span id="viewNoteSubject" class="badge badge-accent"></span> | <strong>Date:</strong> <span id="viewNoteDate"></span></p>
+      <div id="viewNoteBody" style="background:#f8f9fa; padding:15px; border-radius:8px; white-space:pre-wrap; font-family: monospace; font-size: 0.95rem;"></div>
+    </div>
+  </div>
+
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // GLOBAL STATE & ACTIVE SESSION CHECK
+    let currentEmail = localStorage.getItem("currentStudentEmail");
+    let students = JSON.parse(localStorage.getItem("students")) || [];
+    let studentIndex = students.findIndex(s => s.email === currentEmail);
+
+    if (studentIndex === -1) {
+      alert("Please sign in first!");
+      window.location.href = "welcome.html";
+    }
+
+    let student = students[studentIndex];
+    
+    // Ensure arrays exist on student object
+    student.focusSubjects = student.focusSubjects || [];
+    student.timetable = student.timetable || [];
+    student.assignments = student.assignments || [];
+    student.notes = student.notes || [];
+    student.exams = student.exams || [];
+
+    function saveStudentData() {
+      students[studentIndex] = student;
+      localStorage.setItem("students", JSON.stringify(students));
+      renderUI();
+    }
+
+    // DRAWER & NAVIGATION LOGIC
+    const navDrawer = document.getElementById("navDrawer");
+    const overlay = document.getElementById("overlay");
+    const openDrawerBtn = document.getElementById("openDrawerBtn");
+    const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+
+    function toggleDrawer(open) {
+      if(open) {
+        navDrawer.classList.add("open");
+        overlay.classList.add("active");
+      } else {
+        navDrawer.classList.remove("open");
+        overlay.classList.remove("active");
+      }
+    }
+
+    openDrawerBtn.addEventListener("click", () => toggleDrawer(true));
+    closeDrawerBtn.addEventListener("click", () => toggleDrawer(false));
+    overlay.addEventListener("click", () => toggleDrawer(false));
+
+    // TAB SWITCHING
+    const navLinks = document.querySelectorAll(".nav-link");
+    const pageSections = document.querySelectorAll(".page-section");
+
+    navLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute("data-target");
+        navLinks.forEach(l => l.classList.remove("active"));
+        pageSections.forEach(s => s.classList.remove("active"));
+
+        link.classList.add("active");
+        document.getElementById(targetId).classList.add("active");
+        toggleDrawer(false);
+      });
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      if(confirm("Are you sure you want to log out?")) {
+        localStorage.removeItem("currentStudentEmail");
+        window.location.href = "welcome.html";
+      }
+    });
+
+    // EDIT DETAILS (BOARD & FOCUS SUBJECTS) MODAL LOGIC
+    const editModal = document.getElementById("editModal");
+    const triggerEditBtn = document.getElementById("triggerEditBtn");
+    const closeEditModal = document.getElementById("closeEditModal");
+    let tempFocusSubjects = [...student.focusSubjects];
+
+    function openEditModal() {
+      document.getElementById("boardSelect").value = student.board || "";
+      tempFocusSubjects = [...(student.focusSubjects || [])];
+      renderSubjectChips();
+      
+      // Check checkboxes
+      const checkboxes = document.querySelectorAll("#defaultSubjectsList input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        cb.checked = tempFocusSubjects.includes(cb.value);
+      });
+
+      editModal.classList.add("active");
+    }
+
+    triggerEditBtn.addEventListener("click", openEditModal);
+    closeEditModal.addEventListener("click", () => editModal.classList.remove("active"));
+
+    // Checkbox listener
+    document.querySelectorAll("#defaultSubjectsList input[type='checkbox']").forEach(cb => {
+      cb.addEventListener("change", (e) => {
+        if(e.target.checked) {
+          if(!tempFocusSubjects.includes(e.target.value)) tempFocusSubjects.push(e.target.value);
+        } else {
+          tempFocusSubjects = tempFocusSubjects.filter(s => s !== e.target.value);
+        }
+        renderSubjectChips();
+      });
+    });
+
+    document.getElementById("addCustomSubBtn").addEventListener("click", () => {
+      const customInput = document.getElementById("customSubjectInput");
+      const val = customInput.value.trim();
+      if(val && !tempFocusSubjects.includes(val)) {
+        tempFocusSubjects.push(val);
+        customInput.value = "";
+        renderSubjectChips();
+      }
+    });
+
+    function renderSubjectChips() {
+      const container = document.getElementById("selectedSubjectsChips");
+      container.innerHTML = "";
+      tempFocusSubjects.forEach(sub => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.innerHTML = `${sub} <span class="remove-chip" data-sub="${sub}">&times;</span>`;
+        container.appendChild(chip);
+      });
+
+      container.querySelectorAll(".remove-chip").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const subToRemove = e.target.getAttribute("data-sub");
+          tempFocusSubjects = tempFocusSubjects.filter(s => s !== subToRemove);
+          renderSubjectChips();
+        });
+      });
+    }
+
+    document.getElementById("editDetailsForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const boardVal = document.getElementById("boardSelect").value;
+      if(!boardVal) { alert("Please select a Board!"); return; }
+      if(tempFocusSubjects.length === 0) { alert("Please select at least one Focus Subject!"); return; }
+
+      student.board = boardVal;
+      student.focusSubjects = tempFocusSubjects;
+      saveStudentData();
+      editModal.classList.remove("active");
+      alert("Academic profile updated successfully!");
+    });
+
+    // RENDER UI MAIN FUNCTION
+    function renderUI() {
+      // Top Nav Header Profile
+      document.getElementById("navPhoto").src = student.photo || 'https://via.placeholder.com/150';
+      document.getElementById("navName").textContent = student.name.split(" ")[0];
+
+      // Dashboard Profile Card
+      document.getElementById("dashPhoto").src = student.photo || 'https://via.placeholder.com/150';
+      document.getElementById("dashName").textContent = student.name;
+      document.getElementById("dashSchool").textContent = student.school;
+      document.getElementById("dashClass").textContent = student.classValue;
+      document.getElementById("dashBatch").textContent = student.batch;
+      document.getElementById("dashBoard").textContent = student.board || "Not specified";
+      document.getElementById("dashLocation").textContent = `${student.city}, ${student.state}`;
+
+      const dashSubjectsSpan = document.getElementById("dashSubjects");
+      if(student.focusSubjects && student.focusSubjects.length > 0) {
+        dashSubjectsSpan.innerHTML = student.focusSubjects.map(s => `<span class="badge badge-accent">${s}</span>`).join("");
+      } else {
+        dashSubjectsSpan.innerHTML = `<span class="badge badge-secondary">None selected (Click Edit Details)</span>`;
+      }
+
+      // Stats
+      document.getElementById("statAssignments").textContent = student.assignments.length;
+      document.getElementById("statNotes").textContent = student.notes.length;
+      document.getElementById("statExams").textContent = student.exams.length;
+
+      // Render Dropdowns for Subject Selection
+      populateSubjectDropdowns();
+
+      // Render Sections
+      renderCountdownWidget();
+      renderTodayTimetable();
+      renderExamsPreview();
+      renderCalendar();
+      renderTimetableList();
+      renderAssignments();
+      renderNotes();
+      renderExams();
+    }
+
+    function populateSubjectDropdowns() {
+      const selects = [
+        document.getElementById("ttSubject"),
+        document.getElementById("asSubject"),
+        document.getElementById("ntSubject"),
+        document.getElementById("exSubject")
+      ];
+      
+      const filterSelects = [
+        document.getElementById("assignmentFilterSubject"),
+        document.getElementById("notesFilterSubject")
+      ];
+
+      selects.forEach(sel => {
+        if(!sel) return;
+        sel.innerHTML = "";
+        if(student.focusSubjects.length === 0) {
+          sel.innerHTML = `<option value="General">General</option>`;
+        } else {
+          student.focusSubjects.forEach(sub => {
+            sel.innerHTML += `<option value="${sub}">${sub}</option>`;
+          });
+        }
+      });
+
+      filterSelects.forEach(sel => {
+        if(!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = `<option value="ALL">All Focus Subjects</option>`;
+        student.focusSubjects.forEach(sub => {
+          sel.innerHTML += `<option value="${sub}">${sub}</option>`;
+        });
+        if(currentVal) sel.value = currentVal;
+      });
+    }
+
+    // COUNTDOWN WIDGET
+    let countdownInterval;
+    function renderCountdownWidget() {
+      if(countdownInterval) clearInterval(countdownInterval);
+
+      // Find nearest upcoming exam or featured timetable task
+      const now = new Date().getTime();
+      let targetEvents = [];
+
+      student.exams.forEach(ex => {
+        const dt = new Date(`${ex.date}T${ex.time || '09:00'}`);
+        if(dt.getTime() > now) {
+          targetEvents.push({ title: ex.title, subject: ex.subject, time: dt.getTime(), type: 'EXAM' });
+        }
+      });
+
+      student.timetable.filter(tt => tt.featured).forEach(tt => {
+        const dt = new Date(`${tt.date}T${tt.time || '09:00'}`);
+        if(dt.getTime() > now) {
+          targetEvents.push({ title: tt.title, subject: tt.subject, time: dt.getTime(), type: 'TASK' });
+        }
+      });
+
+      targetEvents.sort((a,b) => a.time - b.time);
+
+      if(targetEvents.length === 0) {
+        document.getElementById("countdownTitle").textContent = "NO UPCOMING COUNTDOWN";
+        document.getElementById("cdDays").textContent = "00";
+        document.getElementById("cdHours").textContent = "00";
+        document.getElementById("cdMins").textContent = "00";
+        document.getElementById("cdSecs").textContent = "00";
+        document.getElementById("countdownSubtext").textContent = "Schedule an Exam or featured task to start live countdown!";
+        return;
+      }
+
+      const target = targetEvents[0];
+      document.getElementById("countdownTitle").textContent = `⏳ ${target.type === 'EXAM' ? 'EXAM COUNTDOWN' : 'FEATURED TASK'}: ${target.title.toUpperCase()}`;
+      document.getElementById("countdownSubtext").textContent = `${target.subject} | Target: ${new Date(target.time).toLocaleString()}`;
+
+      function updateClock() {
+        const current = new Date().getTime();
+        const distance = target.time - current;
+
+        if (distance < 0) {
+          clearInterval(countdownInterval);
+          renderCountdownWidget();
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("cdDays").textContent = String(days).padStart(2, '0');
+        document.getElementById("cdHours").textContent = String(hours).padStart(2, '0');
+        document.getElementById("cdMins").textContent = String(minutes).padStart(2, '0');
+        document.getElementById("cdSecs").textContent = String(seconds).padStart(2, '0');
+      }
+
+      updateClock();
+      countdownInterval = setInterval(updateClock, 1000);
+    }
+
+    // DASHBOARD LISTS
+    function renderTodayTimetable() {
+      const container = document.getElementById("dashTodayList");
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayTasks = student.timetable.filter(tt => tt.date === todayStr);
+
+      if(todayTasks.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted);">No tasks scheduled for today.</p>`;
+        return;
+      }
+
+      container.innerHTML = todayTasks.map(tt => `
+        <div class="item-card">
+          <div class="item-details">
+            <h4>${tt.title}</h4>
+            <p><strong>Subject:</strong> ${tt.subject} | <strong>Time:</strong> ${tt.time}</p>
+          </div>
+          <span class="badge badge-primary">${tt.time}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderExamsPreview() {
+      const container = document.getElementById("dashExamsList");
+      if(student.exams.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted);">No upcoming exams scheduled.</p>`;
+        return;
+      }
+
+      const sortedExams = [...student.exams].sort((a,b) => new Date(a.date) - new Date(b.date));
+      container.innerHTML = sortedExams.slice(0, 3).map(ex => `
+        <div class="item-card exam-type">
+          <div class="item-details">
+            <h4>🚨 ${ex.title}</h4>
+            <p><strong>Subject:</strong> ${ex.subject} | <strong>Date:</strong> ${ex.date} (${ex.time})</p>
+            <p style="font-size:0.85rem; color:#555;"><strong>Portions:</strong> ${ex.portion}</p>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // TIMETABLE & CALENDAR
+    let currCalDate = new Date();
+    function renderCalendar() {
+      const year = currCalDate.getFullYear();
+      const month = currCalDate.getMonth();
+      
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById("calendarMonthYear").textContent = `${monthNames[month]} ${year}`;
+
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      dayNames.forEach(d => {
+        grid.innerHTML += `<div class="cal-day-name">${d}</div>`;
+      });
+
+      for(let i=0; i<firstDay; i++) {
+        grid.innerHTML += `<div class="cal-cell" style="background:#f9f9f9; cursor:default;"></div>`;
+      }
+
+      const today = new Date();
+      for(let day=1; day<=daysInMonth; day++) {
+        const cellDateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        
+        // Find tasks for this day
+        const dayTasks = student.timetable.filter(tt => tt.date === cellDateStr);
+        const dayExams = student.exams.filter(ex => ex.date === cellDateStr);
+
+        let cellContent = `<div class="cal-number">${day}</div>`;
+        dayExams.forEach(ex => {
+          cellContent += `<div class="cal-event-dot exam" title="EXAM: ${ex.title}">🚨 ${ex.subject}</div>`;
+        });
+        dayTasks.forEach(tt => {
+          cellContent += `<div class="cal-event-dot" title="${tt.title}">${tt.subject}: ${tt.title}</div>`;
+        });
+
+        grid.innerHTML += `<div class="cal-cell ${isToday ? 'today' : ''}" onclick="openAddTaskForDate('${cellDateStr}')">${cellContent}</div>`;
+      }
+    }
+
+    document.getElementById("prevMonthBtn").addEventListener("click", () => {
+      currCalDate.setMonth(currCalDate.getMonth() - 1);
+      renderCalendar();
+    });
+    document.getElementById("nextMonthBtn").addEventListener("click", () => {
+      currCalDate.setMonth(currCalDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    function openAddTaskForDate(dateStr) {
+      document.getElementById("ttDate").value = dateStr;
+      document.getElementById("timetableModal").classList.add("active");
+    }
+
+    document.getElementById("addTimetableBtn").addEventListener("click", () => {
+      document.getElementById("ttDate").value = new Date().toISOString().split('T')[0];
+      document.getElementById("timetableModal").classList.add("active");
+    });
+    document.getElementById("closeTimetableModal").addEventListener("click", () => {
+      document.getElementById("timetableModal").classList.remove("active");
+    });
+
+    document.getElementById("timetableForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const newItem = {
+        id: Date.now(),
+        title: document.getElementById("ttTitle").value,
+        subject: document.getElementById("ttSubject").value,
+        date: document.getElementById("ttDate").value,
+        time: document.getElementById("ttTime").value,
+        notes: document.getElementById("ttNotes").value,
+        featured: document.getElementById("ttFeatured").checked
+      };
+
+      student.timetable.push(newItem);
+      saveStudentData();
+      document.getElementById("timetableForm").reset();
+      document.getElementById("timetableModal").classList.remove("active");
+    });
+
+    function renderTimetableList() {
+      const container = document.getElementById("timetableListContainer");
+      if(student.timetable.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted);">No timetable tasks added yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = [...student.timetable].reverse().map(tt => `
+        <div class="item-card">
+          <div class="item-details">
+            <h4>${tt.title} ${tt.featured ? '⭐ (Featured Countdown)' : ''}</h4>
+            <p><strong>Subject:</strong> ${tt.subject} | <strong>Date:</strong> ${tt.date} | <strong>Time:</strong> ${tt.time}</p>
+            ${tt.notes ? `<p style="font-size:0.85rem;">${tt.notes}</p>` : ''}
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteTimetableItem(${tt.id})">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function deleteTimetableItem(id) {
+      if(confirm("Delete this timetable task?")) {
+        student.timetable = student.timetable.filter(t => t.id !== id);
+        saveStudentData();
+      }
+    }
+
+    // ASSIGNMENT STORAGE LOGIC
+    document.getElementById("addAssignmentBtn").addEventListener("click", () => {
+      document.getElementById("assignmentModal").classList.add("active");
+    });
+    document.getElementById("closeAssignmentModal").addEventListener("click", () => {
+      document.getElementById("assignmentModal").classList.remove("active");
+    });
+
+    document.getElementById("assignmentForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const newAs = {
+        id: Date.now(),
+        title: document.getElementById("asTitle").value,
+        subject: document.getElementById("asSubject").value,
+        dueDate: document.getElementById("asDueDate").value,
+        details: document.getElementById("asDetails").value,
+        status: "Pending"
+      };
+
+      student.assignments.push(newAs);
+      saveStudentData();
+      document.getElementById("assignmentForm").reset();
+      document.getElementById("assignmentModal").classList.remove("active");
+    });
+
+    document.getElementById("assignmentFilterSubject").addEventListener("change", renderAssignments);
+
+    function renderAssignments() {
+      const filter = document.getElementById("assignmentFilterSubject").value;
+      const container = document.getElementById("assignmentsContainer");
+
+      let filtered = student.assignments;
+      if(filter !== "ALL") {
+        filtered = filtered.filter(a => a.subject === filter);
+      }
+
+      if(filtered.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); grid-column:span 2;">No assignments stored for this filter.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(a => `
+        <div class="card" style="margin:0;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <span class="badge badge-accent">${a.subject}</span>
+              <h3 style="margin: 8px 0 4px 0;">${a.title}</h3>
+              <p style="margin: 2px 0; color:var(--text-muted); font-size:0.9rem;"><strong>Due Date:</strong> ${a.dueDate}</p>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteAssignment(${a.id})">Delete</button>
+          </div>
+          <hr style="border:0; border-top:1px solid #eee; margin: 12px 0;">
+          <p style="font-size:0.95rem; color:#444;">${a.details || 'No additional details provided.'}</p>
+          <div style="margin-top:10px;">
+            <button class="btn btn-sm ${a.status === 'Completed' ? 'btn-primary' : 'btn-secondary'}" onclick="toggleAssignmentStatus(${a.id})">
+              Status: ${a.status}
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function toggleAssignmentStatus(id) {
+      const as = student.assignments.find(a => a.id === id);
+      if(as) {
+        as.status = as.status === "Pending" ? "Completed" : "Pending";
+        saveStudentData();
+      }
+    }
+
+    function deleteAssignment(id) {
+      if(confirm("Delete this assignment?")) {
+        student.assignments = student.assignments.filter(a => a.id !== id);
+        saveStudentData();
+      }
+    }
+
+    // NOTES STORAGE LOGIC
+    document.getElementById("addNoteBtn").addEventListener("click", () => {
+      document.getElementById("noteModal").classList.add("active");
+    });
+    document.getElementById("closeNoteModal").addEventListener("click", () => {
+      document.getElementById("noteModal").classList.remove("active");
+    });
+
+    document.getElementById("noteForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const newNt = {
+        id: Date.now(),
+        title: document.getElementById("ntTitle").value,
+        subject: document.getElementById("ntSubject").value,
+        content: document.getElementById("ntContent").value,
+        date: new Date().toLocaleDateString()
+      };
+
+      student.notes.push(newNt);
+      saveStudentData();
+      document.getElementById("noteForm").reset();
+      document.getElementById("noteModal").classList.remove("active");
+    });
+
+    document.getElementById("notesFilterSubject").addEventListener("change", renderNotes);
+
+    function renderNotes() {
+      const filter = document.getElementById("notesFilterSubject").value;
+      const container = document.getElementById("notesContainer");
+
+      let filtered = student.notes;
+      if(filter !== "ALL") {
+        filtered = filtered.filter(n => n.subject === filter);
+      }
+
+      if(filtered.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); grid-column:span 3;">No notes stored for this filter.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(n => `
+        <div class="card" style="margin:0; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <span class="badge badge-primary">${n.subject}</span>
+            <h4 style="margin: 10px 0 6px 0;">${n.title}</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Saved: ${n.date}</p>
+            <p style="font-size:0.9rem; color:#555; height:60px; overflow:hidden; text-overflow:ellipsis;">${n.content}</p>
+          </div>
+          <div style="margin-top:15px; display:flex; justify-content:space-between;">
+            <button class="btn btn-sm btn-secondary" onclick="viewNoteDetail(${n.id})">Open Note</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteNote(${n.id})">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function viewNoteDetail(id) {
+      const nt = student.notes.find(n => n.id === id);
+      if(nt) {
+        document.getElementById("viewNoteTitle").textContent = nt.title;
+        document.getElementById("viewNoteSubject").textContent = nt.subject;
+        document.getElementById("viewNoteDate").textContent = nt.date;
+        document.getElementById("viewNoteBody").textContent = nt.content;
+        document.getElementById("viewNoteModal").classList.add("active");
+      }
+    }
+    document.getElementById("closeViewNoteModal").addEventListener("click", () => {
+      document.getElementById("viewNoteModal").classList.remove("active");
+    });
+
+    function deleteNote(id) {
+      if(confirm("Delete this note?")) {
+        student.notes = student.notes.filter(n => n.id !== id);
+        saveStudentData();
+      }
+    }
+
+    // EXAMS REMINDER LOGIC
+    document.getElementById("addExamBtn").addEventListener("click", () => {
+      document.getElementById("examModal").classList.add("active");
+    });
+    document.getElementById("closeExamModal").addEventListener("click", () => {
+      document.getElementById("examModal").classList.remove("active");
+    });
+
+    document.getElementById("examForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const newEx = {
+        id: Date.now(),
+        title: document.getElementById("exTitle").value,
+        subject: document.getElementById("exSubject").value,
+        date: document.getElementById("exDate").value,
+        time: document.getElementById("exTime").value,
+        portion: document.getElementById("exPortion").value
+      };
+
+      student.exams.push(newEx);
+      saveStudentData();
+      document.getElementById("examForm").reset();
+      document.getElementById("examModal").classList.remove("active");
+      alert("Exam added! Synced with Timetable calendar and Countdown.");
+    });
+
+    function renderExams() {
+      const container = document.getElementById("examsContainer");
+      if(student.exams.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); grid-column:span 2;">No exam reminders scheduled.</p>`;
+        return;
+      }
+
+      container.innerHTML = student.exams.map(ex => `
+        <div class="card exam-type" style="margin:0;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <span class="badge badge-danger">EXAM</span>
+              <span class="badge badge-primary">${ex.subject}</span>
+              <h3 style="margin: 8px 0 4px 0; color:var(--danger);">${ex.title}</h3>
+              <p style="margin: 2px 0; color:var(--text-muted); font-size:0.9rem;">
+                <strong>Date & Time:</strong> 📅 ${ex.date} at ⏰ ${ex.time}
+              </p>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteExam(${ex.id})">Delete</button>
+          </div>
+          <hr style="border:0; border-top:1px solid #ffcccc; margin: 12px 0;">
+          <p style="font-size:0.9rem; color:#333; margin:0;">
+            <strong>Syllabus / Portions Covered:</strong><br>${ex.portion}
+          </p>
+        </div>
+      `).join("");
+    }
+
+    function deleteExam(id) {
+      if(confirm("Delete this exam reminder?")) {
+        student.exams = student.exams.filter(ex => ex.id !== id);
+        saveStudentData();
+      }
+    }
+
+    // 6. STOPWATCH & POMODORO TIMER LOGIC
+    let swInterval, swTime = 0, swRunning = false;
+    let lapCount = 0;
+
+    const swDisplay = document.getElementById("swDisplay");
+    const swStartBtn = document.getElementById("swStartBtn");
+    const swLapBtn = document.getElementById("swLapBtn");
+    const swResetBtn = document.getElementById("swResetBtn");
+    const swLapList = document.getElementById("swLapList");
+
+    function formatSwTime(ms) {
+      const hrs = Math.floor(ms / 3600000);
+      const mins = Math.floor((ms % 3600000) / 60000);
+      const secs = Math.floor((ms % 60000) / 1000);
+      const hundredths = Math.floor((ms % 1000) / 10);
+      return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
+    }
+
+    swStartBtn.addEventListener("click", () => {
+      if(!swRunning) {
+        swRunning = true;
+        swStartBtn.textContent = "Pause";
+        swStartBtn.className = "btn btn-secondary";
+        swLapBtn.disabled = false;
+        const startTime = Date.now() - swTime;
+        swInterval = setInterval(() => {
+          swTime = Date.now() - startTime;
+          swDisplay.textContent = formatSwTime(swTime);
+        }, 10);
+      } else {
+        swRunning = false;
+        swStartBtn.textContent = "Resume";
+        swStartBtn.className = "btn btn-primary";
+        swLapBtn.disabled = true;
+        clearInterval(swInterval);
+      }
+    });
+
+    swLapBtn.addEventListener("click", () => {
+      if(swRunning) {
+        lapCount++;
+        if(lapCount === 1) swLapList.innerHTML = "";
+        const lapDiv = document.createElement("div");
+        lapDiv.style.borderBottom = "1px solid #ddd";
+        lapDiv.style.padding = "4px 0";
+        lapDiv.innerHTML = `<strong>Lap ${lapCount}:</strong> ${formatSwTime(swTime)}`;
+        swLapList.prepend(lapDiv);
+      }
+    });
+
+    swResetBtn.addEventListener("click", () => {
+      clearInterval(swInterval);
+      swRunning = false;
+      swTime = 0;
+      lapCount = 0;
+      swDisplay.textContent = "00:00:00.00";
+      swStartBtn.textContent = "Start";
+      swStartBtn.className = "btn btn-primary";
+      swLapBtn.disabled = true;
+      swLapList.innerHTML = `<p style="color:#888; margin:0;">No laps recorded.</p>`;
+    });
+
+    // POMODORO COUNTDOWN TIMER LOGIC
+    let cdInterval, cdTotalSecs = 1500, cdTimerRunning = false;
+    const cdTimerDisplay = document.getElementById("cdTimerDisplay");
+    const cdTimerStartBtn = document.getElementById("cdTimerStartBtn");
+    const cdTimerResetBtn = document.getElementById("cdTimerResetBtn");
+
+    function setTimerPreset(mins) {
+      document.getElementById("timerHrs").value = 0;
+      document.getElementById("timerMins").value = mins;
+      document.getElementById("timerSecs").value = 0;
+      resetCdTimer();
+    }
+
+    function updateCdDisplay() {
+      const h = Math.floor(cdTotalSecs / 3600);
+      const m = Math.floor((cdTotalSecs % 3600) / 60);
+      const s = cdTotalSecs % 60;
+      if(h > 0) {
+        cdTimerDisplay.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      } else {
+        cdTimerDisplay.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }
+    }
+
+    function resetCdTimer() {
+      clearInterval(cdInterval);
+      cdTimerRunning = false;
+      const h = parseInt(document.getElementById("timerHrs").value) || 0;
+      const m = parseInt(document.getElementById("timerMins").value) || 0;
+      const s = parseInt(document.getElementById("timerSecs").value) || 0;
+      cdTotalSecs = h * 3600 + m * 60 + s;
+      updateCdDisplay();
+      cdTimerStartBtn.textContent = "Start Timer";
+      cdTimerStartBtn.className = "btn btn-success";
+    }
+
+    cdTimerStartBtn.addEventListener("click", () => {
+      if(!cdTimerRunning) {
+        if(cdTotalSecs <= 0) resetCdTimer();
+        if(cdTotalSecs <= 0) return;
+
+        cdTimerRunning = true;
+        cdTimerStartBtn.textContent = "Pause Timer";
+        cdTimerStartBtn.className = "btn btn-secondary";
+
+        cdInterval = setInterval(() => {
+          cdTotalSecs--;
+          updateCdDisplay();
+
+          if(cdTotalSecs <= 0) {
+            clearInterval(cdInterval);
+            cdTimerRunning = false;
+            cdTimerStartBtn.textContent = "Start Timer";
+            cdTimerStartBtn.className = "btn btn-success";
+            alert("⏰ Timer Complete! Time to take a break or move to the next session.");
+          }
+        }, 1000);
+      } else {
+        clearInterval(cdInterval);
+        cdTimerRunning = false;
+        cdTimerStartBtn.textContent = "Resume Timer";
+        cdTimerStartBtn.className = "btn btn-success";
+      }
+    });
+
+    cdTimerResetBtn.addEventListener("click", resetCdTimer);
+
+    // FLOATING AI ASSISTANT BOT LOGIC
+    const aiBotTrigger = document.getElementById("aiBotTrigger");
+    const aiChatWindow = document.getElementById("aiChatWindow");
+    const closeAiChat = document.getElementById("closeAiChat");
+    const aiTabBtns = document.querySelectorAll(".ai-tab-btn");
+    const aiDoubtFooter = document.getElementById("aiDoubtFooter");
+
+    aiBotTrigger.addEventListener("click", () => {
+      aiChatWindow.classList.toggle("active");
+    });
+    closeAiChat.addEventListener("click", () => {
+      aiChatWindow.classList.remove("active");
+    });
+
+    aiTabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        aiTabBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const tab = btn.getAttribute("data-tab");
+        document.getElementById("tab-doubt").style.display = tab === "tab-doubt" ? "block" : "none";
+        document.getElementById("tab-plan").style.display = tab === "tab-plan" ? "block" : "none";
+        document.getElementById("tab-test").style.display = tab === "tab-test" ? "block" : "none";
+
+        aiDoubtFooter.style.display = tab === "tab-doubt" ? "flex" : "none";
+      });
+    });
+
+    // AI DOUBTS & CHAT
+    const chatInput = document.getElementById("chatInput");
+    const sendChatBtn = document.getElementById("sendChatBtn");
+    const chatMessages = document.getElementById("chatMessages");
+
+    function sendDoubtQuery() {
+      const q = chatInput.value.trim();
+      if(!q) return;
+
+      // User Message
+      const userMsg = document.createElement("div");
+      userMsg.className = "chat-msg user";
+      userMsg.textContent = q;
+      chatMessages.appendChild(userMsg);
+      chatInput.value = "";
+
+      // Bot thinking response
+      const botMsg = document.createElement("div");
+      botMsg.className = "chat-msg bot";
+      botMsg.textContent = "🤔 Thinking...";
+      chatMessages.appendChild(botMsg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      setTimeout(() => {
+        botMsg.innerHTML = getAiDoubtAnswer(q);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 600);
+    }
+
+    sendChatBtn.addEventListener("click", sendDoubtQuery);
+    chatInput.addEventListener("keypress", (e) => { if(e.key === 'Enter') sendDoubtQuery(); });
+
+    function getAiDoubtAnswer(query) {
+      const q = query.toLowerCase();
+      if(q.includes("newton") || q.includes("motion") || q.includes("force")) {
+        return "<strong>Newton's Laws of Motion:</strong><br>1️⃣ <em>Inertia:</em> An object remains at rest or in uniform motion unless acted upon by a force.<br>2️⃣ <em>F = ma:</em> Force equals mass times acceleration.<br>3️⃣ <em>Action & Reaction:</em> For every action there is an equal and opposite reaction.";
+      }
+      if(q.includes("quadratic") || q.includes("equation") || q.includes("math")) {
+        return "<strong>Quadratic Formula:</strong><br>For \( ax^2 + bx + c = 0 \):<br><code>x = (-b ± √(b² - 4ac)) / (2a)</code><br>💡 <em>Tip:</em> The discriminant \( Δ = b² - 4ac \) determines the nature of roots (real or complex).";
+      }
+      if(q.includes("thermodynamics") || q.includes("heat") || q.includes("physics")) {
+        return "<strong>First Law of Thermodynamics:</strong><br>Energy cannot be created or destroyed, only transformed: <code>ΔU = Q - W</code> (Change in internal energy equals heat added minus work done).";
+      }
+      if(q.includes("study") || q.includes("tips") || q.includes("exam")) {
+        return "💡 <strong>Proven Study Strategies:</strong><br>• Use the <strong>Pomodoro Technique</strong> (25 min study, 5 min break).<br>• Practice <strong>Active Recall</strong> & Spaced Repetition.<br>• Solve previous year question papers.<br>• Teach concepts aloud in simple terms.";
+      }
+      return `<strong>EduAI Explanation:</strong><br>Great question regarding <em>"${query}"</em>!<br>To master this topic:<br>1. Break down key definitions and principles.<br>2. Solve 2-3 standard practice problems.<br>3. Summarize formulas in your EduPlanner Notes section!`;
+    }
+
+    // AI EXAM PLAN GENERATOR
+    let generatedPlanItems = [];
+    document.getElementById("generatePlanBtn").addEventListener("click", () => {
+      const examTitle = document.getElementById("aiPlanExamTitle").value.trim() || "Upcoming Exam";
+      const days = parseInt(document.getElementById("aiPlanDays").value) || 3;
+      const topics = document.getElementById("aiPlanTopics").value.trim() || "Core Concepts & Practice";
+
+      const outContainer = document.getElementById("aiPlanOutput");
+      outContainer.innerHTML = "<p>⚡ Generating optimal study plan...</p>";
+
+      generatedPlanItems = [];
+      const today = new Date();
+
+      let planHtml = `<div style="background:#e7f1ff; padding:12px; border-radius:8px; margin-bottom:12px;">
+        <h4 style="margin:0 0 4px 0; color:var(--primary);">🎯 Plan for ${examTitle} (${days} Days)</h4>
+        <p style="margin:0; font-size:0.85rem; color:#555;"><strong>Topics:</strong> ${topics}</p>
+      </div>`;
+
+      const topicList = topics.split(",").map(t => t.trim());
+
+      for(let i=1; i<=days; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + (i - 1));
+        const dateStr = d.toISOString().split('T')[0];
+
+        const assignedTopic = topicList[(i-1) % topicList.length] || "Revision & Mock Practice";
+        const taskTitle = `Study Day ${i}: ${assignedTopic} (${examTitle})`;
+
+        generatedPlanItems.push({
+          id: Date.now() + i,
+          title: taskTitle,
+          subject: examTitle.split(" ")[0] || "Study",
+          date: dateStr,
+          time: "17:00",
+          notes: `AI Generated Study Session for ${examTitle}. Topic: ${assignedTopic}`,
+          featured: i === 1
+        });
+
+        planHtml += `
+          <div style="background:#fff; border-left:3px solid var(--primary); padding:10px; border-radius:6px; margin-bottom:8px; font-size:0.88rem;">
+            <strong>Day ${i} (${dateStr}):</strong> ${taskTitle}
+          </div>
+        `;
+      }
+
+      planHtml += `
+        <button class="btn btn-success" id="applyPlanBtn" style="width:100%; margin-top:10px;">
+          🚀 Start This Plan (Add to Timetable & Dashboard)
+        </button>
+      `;
+
+      outContainer.innerHTML = planHtml;
+
+      document.getElementById("applyPlanBtn").addEventListener("click", () => {
+        student.timetable.push(...generatedPlanItems);
+        saveStudentData();
+        alert("🎉 Study Plan successfully added to your Timetable & Dashboard!");
+      });
+    });
+
+    // AI TEST GENERATOR LOGIC
+    const testSetupArea = document.getElementById("testSetupArea");
+    const testActiveArea = document.getElementById("testActiveArea");
+    const testResultArea = document.getElementById("testResultArea");
+
+    let testTimerInterval, testSecondsLeft = 300, currentTestQuestions = [];
+
+    document.getElementById("startTestBtn").addEventListener("click", () => {
+      const format = document.getElementById("testFormat").value;
+      const durationMins = parseInt(document.getElementById("testDuration").value) || 5;
+      const topic = document.getElementById("testTopicInput").value.trim() || "General Academic Concepts";
+
+      testSecondsLeft = durationMins * 60;
+      testSetupArea.style.display = "none";
+      testActiveArea.style.display = "block";
+      testResultArea.style.display = "none";
+
+      document.getElementById("testLiveTitle").textContent = `📝 Test: ${topic} (${format})`;
+
+      // Generate Questions
+      if(format === "OBJECTIVE") {
+        currentTestQuestions = [
+          { q: `What is the primary unit of force in SI units?`, options: ["Joule", "Newton", "Watt", "Pascal"], ans: 1 },
+          { q: `Which formula represents Newton's Second Law of Motion?`, options: ["E = mc²", "F = ma", "PV = nRT", "v = u + at"], ans: 1 },
+          { q: `What is the value of acceleration due to gravity near Earth's surface?`, options: ["9.8 m/s²", "5.2 m/s²", "12.0 m/s²", "8.9 m/s²"], ans: 0 }
+        ];
+      } else {
+        currentTestQuestions = [
+          { q: `Explain the concept of ${topic} in detail with key principles and real-world applications.`, type: 'theory' },
+          { q: `Derive or outline the step-by-step formula/process involved in solving problems on ${topic}.`, type: 'theory' }
+        ];
+      }
+
+      renderTestQuestions(format);
+
+      // Start Clock
+      if(testTimerInterval) clearInterval(testTimerInterval);
+      updateTestTimerClock();
+      testTimerInterval = setInterval(() => {
+        testSecondsLeft--;
+        updateTestTimerClock();
+        if(testSecondsLeft <= 0) {
+          clearInterval(testTimerInterval);
+          alert("⏰ Time is up! Submitting your test automatically...");
+          submitTest(format);
+        }
+      }, 1000);
+    });
+
+    function updateTestTimerClock() {
+      const m = Math.floor(testSecondsLeft / 60);
+      const s = testSecondsLeft % 60;
+      document.getElementById("testTimerClock").textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function renderTestQuestions(format) {
+      const container = document.getElementById("testQuestionsContainer");
+      container.innerHTML = "";
+
+      currentTestQuestions.forEach((item, idx) => {
+        if(format === "OBJECTIVE") {
+          container.innerHTML += `
+            <div style="background:#fff; padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #eee;">
+              <p style="margin:0 0 8px 0; font-weight:bold; font-size:0.92rem;">Q${idx+1}. ${item.q}</p>
+              ${item.options.map((opt, optIdx) => `
+                <label style="display:block; margin:4px 0; font-size:0.88rem;">
+                  <input type="radio" name="q_${idx}" value="${optIdx}"> ${opt}
+                </label>
+              `).join('')}
+            </div>
+          `;
+        } else {
+          container.innerHTML += `
+            <div style="background:#fff; padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #eee;">
+              <p style="margin:0 0 8px 0; font-weight:bold; font-size:0.92rem;">Q${idx+1}. ${item.q}</p>
+              <textarea id="sub_ans_${idx}" class="form-control" rows="3" placeholder="Type your answer here..."></textarea>
+            </div>
+          `;
+        }
+      });
+    }
+
+    document.getElementById("submitTestBtn").addEventListener("click", () => {
+      const format = document.getElementById("testFormat").value;
+      submitTest(format);
+    });
+
+    function submitTest(format) {
+      clearInterval(testTimerInterval);
+      testActiveArea.style.display = "none";
+      testResultArea.style.display = "block";
+
+      let resHtml = `<h4 style="color:var(--primary); margin-top:0;">🏆 Test Completed & Evaluated</h4>`;
+
+      if(format === "OBJECTIVE") {
+        let score = 0;
+        currentTestQuestions.forEach((item, idx) => {
+          const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
+          const userVal = selected ? parseInt(selected.value) : -1;
+          if(userVal === item.ans) score++;
+        });
+
+        resHtml += `
+          <div style="text-align:center; background:#e7f1ff; padding:15px; border-radius:8px; margin-bottom:15px;">
+            <h2 style="margin:0; color:var(--primary);">${score} / ${currentTestQuestions.length}</h2>
+            <p style="margin:4px 0 0 0; color:#555;">Score: ${Math.round((score/currentTestQuestions.length)*100)}%</p>
+          </div>
+          <h5>Solutions & Answers:</h5>
+          ${currentTestQuestions.map((item, idx) => `
+            <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #ddd; margin-bottom:8px; font-size:0.88rem;">
+              <strong>Q${idx+1}: ${item.q}</strong><br>
+              <span style="color:var(--success);">Correct Answer: ${item.options[item.ans]}</span>
+            </div>
+          `).join('')}
+        `;
+      } else {
+        resHtml += `
+          <div style="background:#e0fbf7; padding:12px; border-radius:8px; margin-bottom:15px;">
+            <p style="margin:0; font-weight:bold; color:#0f8b7d;">✅ Subjective Evaluation Complete!</p>
+            <p style="margin:4px 0 0 0; font-size:0.88rem; color:#555;">AI Grading: Excellent attempt! Below are model reference solutions to review your answers against.</p>
+          </div>
+          <h5>Model Solutions & Grading Key:</h5>
+          ${currentTestQuestions.map((item, idx) => `
+            <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #ddd; margin-bottom:8px; font-size:0.88rem;">
+              <strong>Q${idx+1}: ${item.q}</strong><br>
+              <span style="color:#333;"><strong>Key Concepts:</strong> Clear definition, formula derivation, diagrams, and numerical units.</span>
+            </div>
+          `).join('')}
+        `;
+      }
+
+      resHtml += `
+        <button class="btn btn-secondary" onclick="resetTestView()" style="width:100%; margin-top:10px;">Take Another Test</button>
+      `;
+
+      testResultArea.innerHTML = resHtml;
+    }
+
+    function resetTestView() {
+      testSetupArea.style.display = "block";
+      testActiveArea.style.display = "none";
+      testResultArea.style.display = "none";
+    }
+
+    // INITIALIZATION ON LOAD
+    window.addEventListener("DOMContentLoaded", () => {
+      renderUI();
+      // If user hasn't configured Board or Focus Subjects yet, automatically prompt modal!
+      if(!student.board || !student.focusSubjects || student.focusSubjects.length === 0) {
+        openEditModal();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to EduPlanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #47d3c5, #120d1c, red);
+      color: #eea411;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      min-height: 100vh;
+    }
+    header { padding: 40px 20px; }
+    .logo {
+      font-size: 80px;
+      font-weight: bold;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 5px;
+      text-shadow: 2px 2px 8px rgba(236, 93, 93, 0.5);
+    }
+    h1 { margin-top: 20px; font-size: 36px; color: #ea1111; text-shadow: 2px 2px 16px rgba(0,0,0,0.5); }
+    h2 { margin-top: 20px; font-size: 36px; color: #e65463; }
+    p { max-width: 600px; margin: 20px auto; font-size: 18px; line-height: 1.6; }
+    form {
+      background: #bcf79f; color: #000; padding: 20px; margin: 30px auto;
+      max-width: 400px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-align: left;
+    }
+    form input, form button {
+      width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px;
+      border: 1px solid #a22d2d; font-size: 14px; box-sizing: border-box;
+    }
+    form button {
+      background: #eea411; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 16px;
+    }
+    form button:hover { background: #deef3d; color: #000; }
+    .error { color: red; font-weight: bold; text-align: center; }
+    .create-link { margin-top: 20px; }
+    .create-link a { color: #fff; font-weight: bold; text-decoration: underline; }
+    .admin-link { margin-top: 15px; }
+    .admin-btn {
+      color: #47d3c5; font-weight: bold; text-decoration: none;
+      border: 1px solid #47d3c5; padding: 8px 16px; border-radius: 4px;
+      display: inline-block; background: transparent; cursor: pointer; font-size: 15px;
+    }
+    .admin-btn:hover { background: #47d3c5; color: #120d1c; }
+    footer { margin-top: 40px; padding: 20px; font-size: 14px; color: #ddd; }
+
+    /* Modal for Admin Password */
+    .admin-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .admin-modal.active { display: flex; }
+    .admin-modal-content {
+      background: #fff; color: #000; padding: 25px; border-radius: 10px;
+      max-width: 350px; width: 90%; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    }
+    .admin-modal-content input {
+      width: 100%; padding: 10px; margin: 12px 0; border-radius: 5px;
+      border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;
+    }
+    .admin-modal-content button {
+      padding: 10px 18px; margin: 5px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- Stylish SP Logo -->
+    <div class="logo"><img src="eduplannerlogo.png" alt="EduPlanner Logo" height="200" width="400" style="max-width: 100%; height: auto;"></div>
+    <marquee behavior="scroll" direction="left">
+      <h1>Welcome to EduPlanner</h1>
+    </marquee>
+    <p>
+      Fear of not having a proper time management system for your exam?<br>
+      We are here to Ace your Academic Progress.<br>
+    </p>
+    <h2>Are you readyyyyy!!!</h2>
+  </header>
+
+  <!-- Sign In Form -->
+  <form id="signinForm">
+    <h2>Sign In</h2>
+    <input id="signinEmail" type="email" placeholder="Enter Email" required>
+    <input id="signinPass" type="password" placeholder="Enter Password" required>
+    <button type="submit">Let's Go!</button>
+    <p id="errorMsg" class="error"></p>
+  </form>
+
+  <!-- Create Account Link -->
+  <div class="create-link">
+    <p>Don't have an account? <a href="student_signup.html">Create a new account</a></p>
+  </div>
+
+  <div class="admin-link">
+    <button class="admin-btn" id="openAdminModalBtn">🔑 Admin Portal</button>
+  </div>
+
+  <!-- Admin Password Modal -->
+  <div class="admin-modal" id="adminAuthModal">
+    <div class="admin-modal-content">
+      <h3 style="margin-top:0; color:#0d6efd;">Admin Security Check</h3>
+      <p style="font-size:14px; color:#555;">Please enter the Admin Portal password to continue:</p>
+      <input type="password" id="adminPassInput" placeholder="Enter Admin Password">
+      <p id="adminErr" style="color:red; font-size:13px; margin: 4px 0; display:none;">Incorrect password!</p>
+      <div>
+        <button id="submitAdminPassBtn" style="background:#0d6efd; color:#fff;">Access Portal</button>
+        <button id="cancelAdminPassBtn" style="background:#6c757d; color:#fff;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 EduPlanner. All Rights Reserved.
+  </footer>
+
+  <script>
+    document.getElementById('signinForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const email = document.getElementById('signinEmail').value.trim();
+      const pass = document.getElementById('signinPass').value.trim();
+
+      // Compare against accounts created in student_signup.html
+      const students = JSON.parse(localStorage.getItem("students")) || [];
+      const student = students.find(s => s.email.toLowerCase() === email.toLowerCase() && s.pass === pass);
+
+      if(student){
+        // Store current active session email
+        localStorage.setItem("currentStudentEmail", student.email);
+        // Redirect to dashboard page after successful login
+        window.location.href = "dashboard.html";
+      } else {
+        // Show error message if wrong or not found
+        document.getElementById('errorMsg').textContent = "Credentials are wrong or account doesn't exist.";
+      }
+    });
+
+    // ADMIN PORTAL PASSWORD PROTECTION LOGIC (password: admin@7890)
+    const adminAuthModal = document.getElementById("adminAuthModal");
+    const adminPassInput = document.getElementById("adminPassInput");
+    const adminErr = document.getElementById("adminErr");
+
+    document.getElementById("openAdminModalBtn").addEventListener("click", () => {
+      adminPassInput.value = "";
+      adminErr.style.display = "none";
+      adminAuthModal.classList.add("active");
+      adminPassInput.focus();
+    });
+
+    document.getElementById("cancelAdminPassBtn").addEventListener("click", () => {
+      adminAuthModal.classList.remove("active");
+    });
+
+    function verifyAdminPass() {
+      const enteredPass = adminPassInput.value;
+      if (enteredPass === "admin@7890") {
+        sessionStorage.setItem("adminLoggedIn", "true");
+        window.location.href = "admin_dashboard.html";
+      } else {
+        adminErr.style.display = "block";
+      }
+    }
+
+    document.getElementById("submitAdminPassBtn").addEventListener("click", verifyAdminPass);
+    adminPassInput.addEventListener("keypress", (e) => {
+      if(e.key === 'Enter') verifyAdminPass();
+    });
+  </script>
+</body>
+</html>
